@@ -19,7 +19,12 @@ http
       let raw = "";
       for await (const chunk of req) raw += chunk;
       try { req.body = raw ? JSON.parse(raw) : {}; } catch { req.body = {}; }
-      return handler(req, res);
+      try {
+        return await handler(req, res);
+      } catch (err) {
+        console.error(err);
+        return res.status(500).json({ error: "Server error" });
+      }
     }
 
     if (req.url === "/" || req.url === "/index.html") {

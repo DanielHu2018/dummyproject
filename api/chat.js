@@ -1,7 +1,7 @@
 // Vercel turns every file in /api into a serverless function.
 // This one lives at /api/chat and keeps the API key on the server.
 
-const MODEL = process.env.GEMINI_MODEL || "gemini-flash-latest";
+const MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
 
 export default async function handler(req, res) {
   const apiKey = process.env.GEMINI_API_KEY;
@@ -22,10 +22,14 @@ export default async function handler(req, res) {
     });
   }
 
-  const prompt = (req.body?.prompt || "").trim();
-  if (!prompt) {
+  const raw = req.body?.prompt;
+  if (typeof raw !== "string" || !raw.trim()) {
     return res.status(400).json({ error: "Please type a prompt." });
   }
+  if (raw.length > 2000) {
+    return res.status(400).json({ error: "Prompt is too long (max 2000 characters)." });
+  }
+  const prompt = raw.trim();
 
   try {
     const response = await fetch(
