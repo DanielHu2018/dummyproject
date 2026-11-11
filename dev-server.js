@@ -1,4 +1,4 @@
-// Local dev server only - Vercel ignores this file and uses /api + index.html directly.
+// Local dev server only - excluded from Vercel deploys by .vercelignore.
 // Run with: npm run dev   (loads your .env automatically)
 import http from "node:http";
 import { readFile } from "node:fs/promises";

@@ -5,7 +5,7 @@ A very small AI app for practicing a Vercel deploy. The page sends your prompt t
 ```
 index.html      → the frontend (served as a static file)
 api/chat.js     → serverless function (Vercel runs every file in /api)
-server.js       → local dev server only (Vercel ignores it)
+dev-server.js   → local dev server only (excluded from Vercel via .vercelignore)
 .env.example    → template for your secrets
 .gitignore      → keeps .env out of GitHub
 ```
