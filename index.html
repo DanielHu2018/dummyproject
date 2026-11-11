@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Vercel Deploy Demo</title>
+  <style>
+    :root { --bg:#0b0b0f; --card:#16161d; --text:#ededf2; --muted:#9a9aab; --accent:#fff; --ok:#3ecf8e; --bad:#ff6b6b; }
+    * { box-sizing: border-box; }
+    body { margin:0; min-height:100vh; display:grid; place-items:center; padding:16px;
+           background:var(--bg); color:var(--text); font:16px/1.5 system-ui, sans-serif; }
+    main { width:100%; max-width:560px; background:var(--card); border:1px solid #26262f;
+           border-radius:14px; padding:28px; }
+    h1 { margin:0 0 4px; font-size:22px; }
+    p.sub { margin:0 0 18px; color:var(--muted); font-size:14px; }
+    .status { display:inline-flex; align-items:center; gap:8px; font-size:13px; padding:4px 10px;
+              border-radius:999px; background:#22222b; margin-bottom:18px; }
+    .dot { width:8px; height:8px; border-radius:50%; background:var(--muted); }
+    .status.ok .dot { background:var(--ok); } .status.bad .dot { background:var(--bad); }
+    textarea { width:100%; min-height:90px; padding:12px; border-radius:10px; border:1px solid #2e2e38;
+               background:#0f0f14; color:var(--text); font:inherit; resize:vertical; }
+    button { margin-top:10px; width:100%; padding:12px; border:0; border-radius:10px; background:var(--accent);
+             color:#000; font:600 15px system-ui, sans-serif; cursor:pointer; }
+    button:disabled { opacity:.5; cursor:wait; }
+    #out { margin-top:18px; white-space:pre-wrap; padding:14px; border-radius:10px; background:#0f0f14;
+           border:1px solid #2e2e38; min-height:48px; color:var(--muted); }
+    #out.error { color:var(--bad); border-color:#4a2626; }
+    #out.ready { color:var(--text); }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>🚀 Vercel Deploy Demo</h1>
+    <p class="sub">A tiny AI app: this page → <code>/api/chat</code> → Gemini.</p>
+
+    <div id="status" class="status"><span class="dot"></span><span id="statusText">Checking API key…</span></div>
+
+    <textarea id="prompt">Tell me a one-sentence fun fact about space.</textarea>
+    <button id="send">Send prompt</button>
+    <div id="out">The response will appear here.</div>
+  </main>
+
+  <script>
+    const statusEl = document.getElementById("status");
+    const statusText = document.getElementById("statusText");
+    const out = document.getElementById("out");
+    const btn = document.getElementById("send");
+
+    // Shows whether GEMINI_API_KEY is set on the server (Step 4 check)
+    fetch("/api/chat")
+      .then((r) => r.json())
+      .then(({ configured }) => {
+        statusEl.className = "status " + (configured ? "ok" : "bad");
+        statusText.textContent = configured
+          ? "GEMINI_API_KEY is configured"
+          : "GEMINI_API_KEY is missing";
+      })
+      .catch(() => (statusText.textContent = "Could not reach /api/chat"));
+
+    btn.addEventListener("click", async () => {
+      btn.disabled = true;
+      out.className = "";
+      out.textContent = "Thinking…";
+      try {
+        const r = await fetch("/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt: document.getElementById("prompt").value }),
+        });
+        const data = await r.json();
+        if (!r.ok) throw new Error(data.error);
+        out.className = "ready";
+        out.textContent = data.text;
+      } catch (e) {
+        out.className = "error";
+        out.textContent = "Error: " + e.message;
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
